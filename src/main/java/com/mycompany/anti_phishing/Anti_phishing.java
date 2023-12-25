@@ -30,6 +30,7 @@ public class Anti_phishing {
 
         // Imprimir estadísticas
         imprimirEstadisticas(ocurrenciasPorFrase);
+        System.out.println("Puntos acumulados para todo el mensaje: " + puntosAcumulados);
 
     }
 
