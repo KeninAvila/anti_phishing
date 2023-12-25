@@ -4,29 +4,40 @@
 
 package com.mycompany.anti_phishing;
 
-/**
- *
- * @author Usuario
- */
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
-public class Anti_phishing{
+public class Anti_phishing {
 
     public static void main(String[] args) {
         List<String> frasesABuscar = obtenerFrasesABuscar();
         String rutaArchivo = "frase.txt";
 
-        explorarArchivo(rutaArchivo, frasesABuscar);
+        // Variable para almacenar los puntos acumulados
+        int puntosAcumulados = 0;
+
+        // Mapa para almacenar el número de ocurrencias por frase
+        Map<String, Integer> ocurrenciasPorFrase = new HashMap<>();
+
+        // Explorar el archivo en busca de frases
+        puntosAcumulados = explorarArchivo(rutaArchivo, frasesABuscar, puntosAcumulados, ocurrenciasPorFrase);
+
+        // Imprimir estadísticas
+        imprimirEstadisticas(ocurrenciasPorFrase);
+
     }
 
     private static List<String> obtenerFrasesABuscar() {
         List<String> frasesABuscar = new ArrayList<>();
-        frasesABuscar.add("Verificar cuenta");
-        frasesABuscar.add("Confirmar contraseña");
+        // Añade las frases que deseas buscar
+        frasesABuscar.add("Verifique cuenta");
+        frasesABuscar.add("Confirme su contraseña");
         frasesABuscar.add("Actualizar información");
         frasesABuscar.add("PayPal");
         frasesABuscar.add("Amazon");
@@ -55,10 +66,12 @@ public class Anti_phishing{
         frasesABuscar.add("Donación");
         frasesABuscar.add("Microsoft");
         frasesABuscar.add("Google");
+        // Añade más frases según sea necesario
         return frasesABuscar;
     }
 
-    private static void explorarArchivo(String rutaArchivo, List<String> frasesABuscar) {
+    private static int explorarArchivo(String rutaArchivo, List<String> frasesABuscar, int puntosAcumulados, Map<String, Integer> ocurrenciasPorFrase) {
+       int i = 0;
         try {
             File archivo = new File(rutaArchivo);
             Scanner scanner = new Scanner(archivo);
@@ -69,8 +82,18 @@ public class Anti_phishing{
 
                 // Comprueba si la línea contiene alguna frase de búsqueda
                 for (String frase : frasesABuscar) {
-                    if (linea.contains(frase)) {
-                        System.out.println("Coincidencia encontrada: " + linea + " (" + frase + ")");
+                    if (linea.toLowerCase().contains(frase.toLowerCase())) {
+                        // Agrega los puntos asociados a la frase al total acumulado
+                        puntosAcumulados += obtenerPuntosPorFrase(frase);
+
+                        // Incrementa el número de ocurrencias para la frase
+                        ocurrenciasPorFrase.put(frase, ocurrenciasPorFrase.getOrDefault(frase, 0) + 1);
+
+                        // Imprime la línea del archivo con la frase encontrada
+                        if(i == 0){
+                          System.out.println("Coincidencia encontrada: " + linea + " (" + frase + ")");
+                        }
+                        i = 1;
                     }
                 }
             }
@@ -79,9 +102,12 @@ public class Anti_phishing{
         } catch (FileNotFoundException e) {
             System.err.println("Archivo no encontrado: " + e.getMessage());
         }
+
+        // Retorna los puntos acumulados después de explorar el archivo
+        return puntosAcumulados;
     }
-    
-        private static int obtenerPuntosPorFrase(String frase) {
+
+    private static int obtenerPuntosPorFrase(String frase) {
         // Definir la asignación de puntos para cada frase
         switch (frase) {
             case "Verificar cuenta":
@@ -121,4 +147,16 @@ public class Anti_phishing{
                 return 0; // Por defecto, no asigna puntos
         }
     }
+
+private static void imprimirEstadisticas(Map<String, Integer> ocurrenciasPorFrase) {
+    System.out.println("\nEstadísticas:");
+    for (Map.Entry<String, Integer> entry : ocurrenciasPorFrase.entrySet()) {
+        String frase = entry.getKey();
+        int ocurrencias = entry.getValue();
+        int puntos = obtenerPuntosPorFrase(frase);
+
+        System.out.println("Frase: " + frase + ", Ocurrencias: " + ocurrencias + ", Puntos por ocurrencia: " + puntos);
+    }
 }
+}
+
